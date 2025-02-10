@@ -75,8 +75,32 @@ function handleNoClick() {
     messageIndex = (messageIndex + 1) % messages.length;
     const currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
     yesButton.style.fontSize = `${currentSize * 1.5}px`;
+
+    let count = localStorage.getItem('noCount') || 0;
+    count = parseInt(count) + 1;
+    localStorage.setItem('noCount', count);
+    document.getElementById('no-count').innerText = count;
 }
 
 function handleYesClick() {
-    window.location.href = "yes_page.html";
+    let noCount = localStorage.getItem('noCount') || 0;
+
+    fetch('send_email.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({noCount: noCount})
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = "yes_page.html";
+            } else {
+                alert("Gửi email thất bại: " + data.error);
+            }
+        }).catch(error => {
+        alert("Lỗi kết nối đến server!");
+    });
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('no-count').innerText = localStorage.getItem('noCount') || 0;
+});
