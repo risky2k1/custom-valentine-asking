@@ -76,31 +76,34 @@ function handleNoClick() {
     const currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
     yesButton.style.fontSize = `${currentSize * 1.5}px`;
 
-    let count = localStorage.getItem('noCount') || 0;
-    count = parseInt(count) + 1;
-    localStorage.setItem('noCount', count);
-    document.getElementById('no-count').innerText = count;
-}
+    let noCount = localStorage.getItem('no_count') || 0;
+    noCount = parseInt(noCount) + 1;
+    localStorage.setItem('no_count', noCount);
 
-function handleYesClick() {
-    let noCount = localStorage.getItem('noCount') || 0;
-
-    fetch('send_email.php', {
+    // Gửi số lần nhấn "No" lên server
+    fetch('save_count.php', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({noCount: noCount})
-    }).then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = "yes_page.html";
-            } else {
-                alert("Gửi email thất bại: " + data.error);
-            }
-        }).catch(error => {
-        alert("Lỗi kết nối đến server!");
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'no', count: noCount })
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById('no-count').innerText = localStorage.getItem('noCount') || 0;
-});
+function handleYesClick() {
+
+    let noCount = localStorage.getItem('no_count') || 0;
+
+    // Gửi số lần nhấn "No" lên server trước khi nhấn "Yes"
+    fetch('save_count.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'yes', count: noCount })
+    });
+
+    localStorage.removeItem('no_count'); // Reset lại sau khi nhấn Yes
+
+    window.location.href = "yes_page.html";
+}
