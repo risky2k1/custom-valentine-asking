@@ -1,6 +1,6 @@
 (async function checkForUpdates() {
     const currentVersion = "1.0";
-    const versionUrl = "https://raw.githubusercontent.com/ivysone/Will-you-be-my-Valentine-/main/version.json"; 
+    const versionUrl = "https://raw.githubusercontent.com/ivysone/Will-you-be-my-Valentine-/main/version.json";
 
     try {
         const response = await fetch(versionUrl);
@@ -75,8 +75,35 @@ function handleNoClick() {
     messageIndex = (messageIndex + 1) % messages.length;
     const currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
     yesButton.style.fontSize = `${currentSize * 1.5}px`;
+
+    let noCount = localStorage.getItem('no_count') || 0;
+    noCount = parseInt(noCount) + 1;
+    localStorage.setItem('no_count', noCount);
+
+    // Gửi số lần nhấn "No" lên server
+    fetch('save_count.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'no', count: noCount })
+    });
 }
 
 function handleYesClick() {
+
+    let noCount = localStorage.getItem('no_count') || 0;
+
+    // Gửi số lần nhấn "No" lên server trước khi nhấn "Yes"
+    fetch('save_count.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'yes', count: noCount })
+    });
+
+    localStorage.removeItem('no_count'); // Reset lại sau khi nhấn Yes
+
     window.location.href = "yes_page.html";
 }
